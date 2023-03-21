@@ -1,0 +1,150 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: integration-server-template
+parameters:
+- name: PROJECT_NAME
+
+objects:
+  # Many values in this YAML will vary by environment: replicas, limits, etc.
+- apiVersion: appconnect.ibm.com/v1beta1
+  kind: IntegrationServer
+  metadata:
+    # The integration server name MUST start with a lower case alphabetic character: cannot be a digit. Allowed characters: lower case alpha. digits, dash
+    name: ace
+    namespace: ${PROJECT_NAME}
+
+    labels:
+      app.metlife.com/eai: "13574"
+
+    # Annotations required at MetLife.
+    # Annotations are more flexible than labels and allow more characters.
+    # Labels must be an empty string or consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character.
+    # Regex used: (([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?
+    annotations:
+      app.metlife.com/dpccode:       "Your_DPC_Code"
+
+  spec:
+    annotations:
+      app.metlife.com/dpccode:       "Your_DPC_Code"
+
+    # Set to true to require HTTPS. By default will create self-sign certs which will cause errors in the browser.
+    # It is possible to define a secret that contains proper certs but that is more complicated to configure.
+    # https://www.ibm.com/docs/en/app-connect/containers_cd?topic=resources-integration-server-reference
+    adminServerSecure: false
+
+    # If not using custom containers, specify URI to one or more BAR files that should be deployed ot an integration server base container image.
+    barURL: ""
+
+    # FAILS when admin authentication is enabled!
+    enableMetrics: true
+
+    # If dashboard users are created, need to get credentials from the secret that is created. Secret name is the same as the integration server name.
+    # Dashboard users can be validated using LDAP.
+    createDashboardUsers: false
+    #configurations:
+
+    # The following configurations are always created when an application is onboarded to the ACE platform:
+    #- setdbparms
+    #- keystore.jks
+    #- truststore.jks
+
+    # Number of pod instances to create.
+    # Lower environments would specify one to simplify debugging and minimize
+    # cluster resource use. Upper environments would specify at least 2 replicas
+    # to ensure application availability and capacity to service requests.
+    replicas: 1
+    designerFlowsOperationMode: disabled
+
+    # Set to true to manually create routes. We will want to do this to:
+    # 1. Not provide an HTTP route
+    # 2. Create routes with desired names.
+    disableRoutes: true
+
+    env:
+    - name: CUSTOM_IMAGE
+      value: "true"
+    - name: NODE_TLS_REJECT_UNAUTHORIZED
+      value: "0"
+
+    # Set the timezone for server output. Defaults to UTC.
+    - name: TZ
+      value: "America/New_York"
+
+    # Pick the CORRECT license info for the environment: 
+    # https://www.ibm.com/docs/en/app-connect/container?topic=resources-licensing-reference-app-connect-operator
+    license:
+      accept: true
+      license: L-APEH-CFZE47
+      use: CloudPakForIntegrationNonProduction
+    pod:
+      containers:
+        runtime:
+          # Specify container registry and repository when your ACE customer container image has been pushed:
+          image: dtr.metlife.com/13574-ace/reference-impl:879749
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 6
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 6
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 3
+          resources:
+            limits:
+              cpu: 1000m
+              ephemeral-storage: 20Gi
+              memory: 2048Mi
+            requests:
+              cpu: 125m
+              ephemeral-storage: 256Mi
+              memory: 512Mi
+          startupProbe:
+            failureThreshold: 120
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          volumeMounts:
+          - mountPath: /logs
+            name: logs
+      # Image pull secrets are only needed if the container repository isn't public and requires login credentials
+      #imagePullSecrets:
+      #- name: image-pull-secret-here
+      volumes:
+      - name: logs
+        persistentVolumeClaim:
+          claimName: ace-pvc-logs
+    router:
+      timeout: 120s
+    service:
+      endpointType: https
+      ports:
+      - name: debug
+        port: 9175
+        protocol: TCP
+        targetPort: 9175
+      type: ClusterIP
+    tracing:
+      enabled: false
+
+    # Controls behavior of the operator
+    # This version is used by the ACE operator and determines what features are available.
+    # A given operator version will only support a certain set of versions.
+    #
+    # When using custom containers, it is NOT necessarily the version of ACE code running in the container!
+    # The base container image determines the version of ACE that is running.
+    #
+    # If the using an external repo for BAR files (the barURL property), the operator will download the
+    # base image to use, add the bar files, start pods using the container that was built.
+    # By default, the operator will download container images from IBM (which will require an entitlement key and
+    # credentials to be configured).
+    #
+    # When using the external BAR file approach, the version must be set to a version supported by the operator. Operator
+    # updates will be blocked if there are integration server instances running running on versions that are no
+    # longer supported. Application development teams would need to update the version to a supported version,
+    # update the licence info, restart integration server pods, test.
+    version: 12.0.6.0-r1-lts

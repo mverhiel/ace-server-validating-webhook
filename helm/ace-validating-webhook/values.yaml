@@ -1,0 +1,38 @@
+# Default values for helm-try.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: ca.icr.io/mverhiel/ace-webhook-validation
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: 5
+
+imagePullSecrets: []
+webhookImagePullSecret: "ca-icr-io"
+  
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 20Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Is the OCP cluster a production environment?
+isProduction: false
+
+# What is the container registry ACE containers should be pulled from?
+containerRegistry: ca.icr.io/mverhiel
+
+fullnameOverride: ace-server-validating-webhook

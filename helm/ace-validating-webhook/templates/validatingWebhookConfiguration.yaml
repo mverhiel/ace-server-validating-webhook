@@ -1,0 +1,31 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: {{ include "ace-validating-webhook.name" . }}
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
+webhooks:
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: {{ include "ace-validating-webhook.name" . }}-service
+      namespace: {{ include "ace-validating-webhook.namespace" . }}
+      path: /validate-ace-server
+  admissionReviewVersions: ["v1beta1"]
+  failurePolicy: Fail
+  timeoutSeconds: 10
+  sideEffects: None
+  name: ace-validating-webhook.ibm.com
+  namespaceSelector:
+    matchLabels:
+        {{ include "ace-validating-webhook.webhookLabels" . }}
+  rules:
+  - apiGroups:
+    - appconnect.ibm.com
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - integrationservers
