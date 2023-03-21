@@ -107,6 +107,33 @@ func (v *IntegrationServerValidator) Handle(ctx context.Context, req admission.R
 		return admission.Denied(msg)
 	}
 
+    // License info:
+	// https://www.ibm.com/docs/en/app-connect/container?topic=resources-licensing-reference-app-connect-operator
+	// Validate license use. NonProduction for dev, int, qa, Production for prod.
+	// Environment variable IS_PRODUCTION set to TRUE or FALSE is set on the pod.
+	isProduction, err := strconv.ParseBool(os.Getenv("IS_PRODUCTION"))
+
+	if err != nil {
+		msg := "Environment variable IS_PRODUCTION value " + os.Getenv("IS_PRODUCTION") + " could not be converted to a boolean."
+		log.Fatal(msg)
+		return admission.Denied(msg)
+	}
+
+	reLicenseUse := regexp.MustCompile(`^\S+NonProduction$`)
+	if isProduction {
+		if reLicenseUse.MatchString(is.IntegrationServerSpec.License.Use) {
+			msg := "License use " + is.IntegrationServerSpec.License.Use + " is not valid for a production environment."
+			log.Error(msg)
+			return admission.Denied(msg)
+		}
+	} else {
+		if !reLicenseUse.MatchString(is.IntegrationServerSpec.License.Use) {
+			msg := "License use " + is.IntegrationServerSpec.License.Use + " is not valid for a non-production environment."
+			log.Error(msg)
+			return admission.Denied(msg)
+		}
+	}
+
 	msg := "IntegrationServer " + is.MetaDataContent.Name + " in namespace " + is.MetaDataContent.Namespace + " allowed."
 	log.Infof(msg)
 	return admission.Allowed(msg)
