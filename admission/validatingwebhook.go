@@ -2,7 +2,7 @@ package admission
 
 import (
 	"context"
-	//"strconv"
+	"strconv"
 
 	log "k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -11,7 +11,7 @@ import (
 	//IBM does NOT provide a golang package we can use to easily unmarshal the request JSON.
 	//But it's trivial to produce Go structures that can be used.
 	"encoding/json"
-	//"os"
+	"os"
 	"regexp"
 )
 
