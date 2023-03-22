@@ -10,9 +10,9 @@ It performs validation of anACE integration server.
 
 Compile the go code as follows:
 
- export CGO_ENABLED=0
- go build -o bin/webhook main.go
+export CGO_ENABLED=0
 
+go build -o bin/webhook main.go
 
 Build the image. Example uses podman.
 
