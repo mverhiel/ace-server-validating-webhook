@@ -39,8 +39,7 @@ helm install ace-server-validating-webhook ace-server-validating-webhook
 
 Label namespaces that you deploy ACE integration servers to and want to be validated as follows:
 
-  labels:
-    app.ibm.com/kind: cp4i
+  app.ibm.com/kind: cp4i
 
 
 
