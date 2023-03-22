@@ -4,7 +4,7 @@
 
 This project implements a custom [validating admission controller](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/) that validates the creation and update of ACE IntegrationServer instances. The admission controller is written in [Golang](https://go.dev/doc/) and is packaged as a [Helm](https://helm.sh/) chart.
 
-It performs validation of anACE integration server.
+It performs validation of an ACE integration server.
 
 ## Building
 
@@ -36,6 +36,13 @@ The following chart [values](helm/ace-server-validating-webhook/values.yaml) may
 Install command:
 
 helm install ace-server-validating-webhook ace-server-validating-webhook
+
+Label namespaces that you deploy ACE integration servers to and want to be validated as follows:
+
+  labels:
+    app.ibm.com/kind: cp4i
+
+
 
 ## References
 
