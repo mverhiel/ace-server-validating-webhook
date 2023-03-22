@@ -31,11 +31,11 @@ The following chart [values](helm/ace-server-validating-webhook/values.yaml) may
 
 * containerRegistry
 
-    The host name of the container registry ACE container images must be pulled from. Default: dtr.metlife.com
+    The host name of the container registry ACE container images must be pulled from. Default: ca.icr.io/mverhiel
 
 Install command:
 
- helm install ace-server-validating-webhook ace-server-validating-webhook
+helm install ace-server-validating-webhook ace-server-validating-webhook
 
 ## References
 
