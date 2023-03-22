@@ -21,7 +21,7 @@ Build the image. Example uses podman.
 
 ## Installing
 
-The admission WebHook is packaged as a Helm chart. The pipeline [deploy.yaml](deploy.yaml) uses Helm to deploy the Helm chart. The admission controller should be installed in every ACE OCP cluster.
+The admission WebHook is packaged as a Helm chart. The admission controller should be installed in every ACE OCP cluster.
 
 The following chart [values](helm/ace-server-validating-webhook/values.yaml) may be set:
 
